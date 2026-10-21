@@ -7,7 +7,7 @@
 <header class="hero"><h1>Generator odpowiedzi kredytowej</h1><p>Wpisz kwotę kredytu netto i okres spłaty. Pozostałe parametry oferty zostaną uzupełnione automatycznie.</p></header>
 <section class="card"><h2>Parametry kredytu</h2>
 <div class="field"><label for="net">Wysokość kredytu netto (zł)</label><input id="net" type="number" min="1" step="100" value="50000"></div>
-<div class="field"><label for="months">Okres kredytowania</label><select id="months"><option value="12">12 miesięcy</option><option value="24">24 miesiące</option><option value="36">36 miesięcy</option><option value="48">48 miesięcy</option><option value="60">60 miesięcy</option><option value="72">72 miesiące</option><option value="84">84 miesiące</option><option value="96">96 miesięcy</option><option value="108">108 miesięcy</option><option value="120" selected>120 miesięcy</option></select></div>
+<div class="field"><label for="months">Okres kredytowania (w miesiącach)</label><input id="months" type="number" min="1" max="120" step="1" value="120" required><p class="hint">Wpisz dowolny okres od 1 do 120 miesięcy, np. 37, 85 lub 120.</p></div>
 <div class="field"><label for="rate">Oprocentowanie nominalne (%)</label><input id="rate" type="number" min="0" step="0.01" value="7.89"></div>
 <div class="field"><label for="rrso">RRSO (%)</label><input id="rrso" type="number" min="0" step="0.01" value="8.19"></div>
 <div class="hint">Prowizja i ubezpieczenie: 0 zł. RRSO wpisujesz ręcznie zgodnie z aktualną symulacją bankową. Rata jest szacowana dla równych rat.</div>
@@ -18,7 +18,7 @@
 const $=id=>document.getElementById(id);
 const pln=n=>Number(n).toLocaleString("pl-PL",{minimumFractionDigits:2,maximumFractionDigits:2})+" zł";
 function generate(){
- const net=Math.max(0,Number($("net").value)||0),months=Number($("months").value)||120,nominal=Math.max(0,Number($("rate").value)||0),monthlyRate=nominal/1200,rrso=$("rrso").value.trim();
+ const net=Math.max(0,Number($("net").value)||0),months=Math.min(120,Math.max(1,Math.floor(Number($("months").value)||120))),nominal=Math.max(0,Number($("rate").value)||0),monthlyRate=nominal/1200,rrso=$("rrso").value.trim();
  const payment=net===0?0:monthlyRate===0?net/months:net*monthlyRate/(1-Math.pow(1+monthlyRate,-months));
  const total=payment*months;
  const lines=[
@@ -41,7 +41,7 @@ function generate(){
 $("generate").addEventListener("click",generate);
 $("copy").addEventListener("click",async()=>{generate();try{if(navigator.clipboard.write && window.ClipboardItem){await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([$("output").innerHTML],{type:"text/html"}),"text/plain":new Blob([$("output").innerText],{type:"text/plain"})})]);}else{await navigator.clipboard.writeText($("output").innerText);}$("copy").textContent="Skopiowano!";setTimeout(()=>$("copy").textContent="Kopiuj odpowiedź",1800);}catch(e){const r=document.createRange();r.selectNodeContents($("output"));const s=window.getSelection();s.removeAllRanges();s.addRange(r);$("copy").textContent="Zaznaczono — skopiuj Ctrl+C";}});
 $("reset").addEventListener("click",()=>{$("net").value="";$("months").value="120";$("rrso").value="8.19";$("rate").value="7.89";$("output").textContent="Wpisz kwotę kredytu i kliknij „Przelicz i wygeneruj odpowiedź”.";});
-$("net").addEventListener("input",generate);$("months").addEventListener("change",generate);$("rrso").addEventListener("input",generate);$("rate").addEventListener("input",generate);
+$("net").addEventListener("input",generate);$("months").addEventListener("input",generate);$("rrso").addEventListener("input",generate);$("rate").addEventListener("input",generate);
 generate();
 })();
 </script></body></html>
